@@ -1,8 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
-import { BackgroundVideo } from './features/video/BackgroundVideo'
 import { CustomCursor } from './features/cursor/CustomCursor'
 import { MouseGlow } from './features/mouse/MouseGlow'
 import { ScrollFadeIn } from './features/scroll/ScrollFadeIn'
+import { ThreeBackground } from './features/three/ThreeBackground'
 
 const TodoApp = lazy(() => import('./features/todos/TodoApp'))
 const CalendarPanel = lazy(() => import('./features/calendar/CalendarPanel'))
@@ -31,7 +31,7 @@ export function App() {
 
   return (
     <div className="app-root">
-      <BackgroundVideo />
+      <ThreeBackground />
       <MouseGlow />
       <CustomCursor />
 

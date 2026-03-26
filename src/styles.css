@@ -59,6 +59,27 @@ body {
   backdrop-filter: blur(6px);
 }
 
+.bg-three {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bg-three canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.bg-three__veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(900px 500px at 30% 20%, rgba(99, 102, 241, 0.16), rgba(0, 0, 0, 0) 55%),
+    linear-gradient(180deg, rgba(255, 240, 246, 0.48), rgba(255, 163, 201, 0.38));
+  backdrop-filter: none;
+}
+
 .mouse-glow {
   position: fixed;
   inset: 0;
@@ -546,11 +567,6 @@ body {
   width: 375px;
   height: 825px;
   overflow: scroll;
-}
-
-canvas {
-  position: absolute;
-  z-index: 1;
 }
 
 .three-wrap {
