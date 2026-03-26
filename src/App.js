@@ -5,7 +5,7 @@ import { MouseGlow } from './features/mouse/MouseGlow'
 import { ScrollFadeIn } from './features/scroll/ScrollFadeIn'
 
 const TodoApp = lazy(() => import('./features/todos/TodoApp'))
-const ThreeScene = lazy(() => import('./features/three/ThreeScene'))
+const CalendarPanel = lazy(() => import('./features/calendar/CalendarPanel'))
 
 export function App() {
   const [isBooting, setIsBooting] = useState(true)
@@ -55,8 +55,8 @@ export function App() {
             </ScrollFadeIn>
 
             <ScrollFadeIn className="app-panel app-panel--three">
-              <Suspense fallback={<div className="app-three__fallback">3D сцена загружается…</div>}>
-                <ThreeScene />
+              <Suspense fallback={<div className="app-three__fallback">Календарь загружается…</div>}>
+                <CalendarPanel />
               </Suspense>
             </ScrollFadeIn>
           </div>
