@@ -1,0 +1,9 @@
+{
+  "short_name": "Organizer",
+  "name": "Умный сайт-органайзер",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#111827",
+  "background_color": "#fdf2f8"
+}

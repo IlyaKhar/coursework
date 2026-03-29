@@ -26,8 +26,7 @@ body,
 }
 
 body {
-  background: rgb(255, 240, 246);
-  background: radial-gradient(circle, rgba(255, 240, 246, 1) 0%, rgba(249, 206, 224, 1) 35%, rgba(255, 163, 201, 1) 100%);
+  background: #0b0b0b;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
@@ -54,9 +53,9 @@ body {
 .bg-video__veil {
   position: absolute;
   inset: 0;
-  background: radial-gradient(900px 500px at 30% 20%, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 55%),
-    linear-gradient(180deg, rgba(255, 240, 246, 0.55), rgba(255, 163, 201, 0.65));
-  backdrop-filter: blur(6px);
+  background: radial-gradient(900px 500px at 30% 20%, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 55%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.38));
+  backdrop-filter: blur(0px);
 }
 
 .bg-three {
@@ -75,8 +74,8 @@ body {
 .bg-three__veil {
   position: absolute;
   inset: 0;
-  background: radial-gradient(900px 500px at 30% 20%, rgba(99, 102, 241, 0.16), rgba(0, 0, 0, 0) 55%),
-    linear-gradient(180deg, rgba(255, 240, 246, 0.48), rgba(255, 163, 201, 0.38));
+  background: radial-gradient(900px 500px at 30% 20%, rgba(17, 24, 39, 0.14), rgba(0, 0, 0, 0) 55%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.34));
   backdrop-filter: none;
 }
 
@@ -87,7 +86,7 @@ body {
   pointer-events: none;
   --mx: 50vw;
   --my: 30vh;
-  background: radial-gradient(420px 320px at var(--mx) var(--my), rgba(99, 102, 241, 0.18), rgba(0, 0, 0, 0) 60%);
+  background: radial-gradient(420px 320px at var(--mx) var(--my), rgba(250, 204, 21, 0.2), rgba(0, 0, 0, 0) 60%);
 }
 
 .cursor-dot,
@@ -137,14 +136,6 @@ body {
   display: flex;
   gap: 12px;
   align-items: center;
-}
-
-.app-header__dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  background: #111827;
-  box-shadow: 0 0 0 6px rgba(17, 24, 39, 0.12);
 }
 
 .app-header__title {
@@ -252,7 +243,7 @@ body {
   background: rgba(255, 255, 255, 0.95);
 }
 .btn:focus-visible {
-  outline: 3px solid rgba(99, 102, 241, 0.35);
+  outline: 3px solid rgba(17, 24, 39, 0.35);
   outline-offset: 2px;
 }
 .btn--primary {
@@ -316,7 +307,7 @@ body {
   font-weight: 650;
 }
 .search:focus-visible {
-  outline: 3px solid rgba(99, 102, 241, 0.35);
+  outline: 3px solid rgba(17, 24, 39, 0.35);
   outline-offset: 2px;
 }
 
@@ -345,7 +336,7 @@ body {
 .progress__bar {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(99, 102, 241, 1), rgba(236, 72, 153, 1));
+  background: #111827;
 }
 
 .todo__chips {
@@ -395,8 +386,8 @@ body {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07);
 }
 .todoItem--active {
-  border-color: rgba(99, 102, 241, 0.35);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16);
+  border-color: rgba(17, 24, 39, 0.35);
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.16);
 }
 .todoItem--done .todoItem__title {
   text-decoration: line-through;
@@ -413,6 +404,7 @@ body {
   width: 18px;
   height: 18px;
   margin-top: 3px;
+  accent-color: #16a34a; /* зелёная «галка», не системный розовый */
 }
 .todoItem__title {
   font-weight: 850;
@@ -424,6 +416,17 @@ body {
   color: rgba(0, 0, 0, 0.56);
   font-size: 0.9rem;
   line-height: 1.25;
+}
+
+.todoItem__due {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(17, 24, 39, 0.72);
+}
+
+.todoItem__due--overdue {
+  color: rgba(220, 38, 38, 0.95);
 }
 
 .todoItem__actions {
@@ -509,7 +512,7 @@ body {
   resize: vertical;
 }
 .field__input:focus-visible {
-  outline: 3px solid rgba(99, 102, 241, 0.35);
+  outline: 3px solid rgba(17, 24, 39, 0.35);
   outline-offset: 2px;
 }
 
@@ -555,9 +558,14 @@ body {
 .content-container {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+.phone-stage {
+  width: 100vw;
+  height: 100vh;
 }
 
 .content-embed {
@@ -567,6 +575,122 @@ body {
   width: 375px;
   height: 825px;
   overflow: scroll;
+}
+
+.phone-embed {
+  pointer-events: auto;
+}
+
+.phone-embed__inner {
+  pointer-events: auto;
+}
+
+.phone-embed.content-embed {
+  /* Подгон под экран телефона в Spline-сцене */
+  /* scale Html уменьшен — увеличиваем px, чтобы визуально тот же размер, но текст резче */
+  width: 430px;
+  height: 936px;
+  border-radius: 40px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+  text-rendering: geometricPrecision;
+}
+
+.app-shell.is-embedded {
+  padding: 10px;
+}
+
+.is-embedded .app-header {
+  max-width: none;
+  margin: 0 0 10px;
+}
+
+.is-embedded .app-main {
+  max-width: none;
+}
+
+.is-embedded .app-grid {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.is-embedded .app-panel--three {
+  min-height: auto;
+}
+
+.phone-embed .calendar {
+  min-height: auto;
+}
+
+/* Компактный режим под экран телефона */
+.is-embedded .app-header__title {
+  font-size: 1rem;
+}
+.is-embedded .app-header__subtitle {
+  font-size: 0.82rem;
+}
+.is-embedded .todo {
+  padding: 14px;
+}
+.is-embedded .todo__top {
+  margin-bottom: 10px;
+}
+.is-embedded .todo__hint {
+  font-size: 0.78rem;
+}
+.is-embedded .btn {
+  padding: 9px 10px;
+  font-size: 0.86rem;
+  border-radius: 11px;
+}
+.is-embedded .btn--tiny {
+  padding: 7px 9px;
+  font-size: 0.78rem;
+}
+.is-embedded .seg__btn {
+  padding: 7px 9px;
+  font-size: 0.82rem;
+}
+.is-embedded .search {
+  padding: 9px 10px;
+  border-radius: 12px;
+  min-width: 160px;
+}
+.is-embedded .todoItem {
+  padding: 10px;
+  border-radius: 14px;
+}
+
+.phone-embed .calendar {
+  padding: 14px;
+}
+.phone-embed .calendar__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.phone-embed .calendarMonth {
+  padding: 8px;
+  border-radius: 12px;
+}
+.phone-embed .calendarMonth__title {
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+.phone-embed .calendarMonth__weekdays span {
+  font-size: 0.7rem;
+}
+.phone-embed .calendarMonth__day {
+  min-height: 26px;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 420px) {
+  .phone-embed .calendar__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .three-wrap {
@@ -708,12 +832,32 @@ body {
 }
 
 .calendarMonth__day--today {
-  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(17, 24, 39, 0.45);
 }
 
 .calendarMonth__day--selected {
   background: rgba(17, 24, 39, 0.92);
   color: white;
+}
+
+.calendarMonth__day--deadline {
+  position: relative;
+}
+
+.calendarMonth__day--deadline::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.95);
+}
+
+.calendarMonth__day--selected.calendarMonth__day--deadline::after {
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .calendar__preview {
@@ -735,7 +879,20 @@ body {
   font-weight: 800;
   color: rgba(0, 0, 0, 0.8);
   text-transform: capitalize;
+  margin-bottom: 6px;
+}
+
+.calendar__previewTasks {
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: rgba(0, 0, 0, 0.62);
   margin-bottom: 10px;
+  line-height: 1.35;
+}
+
+.calendar__previewTasksNum {
+  font-weight: 900;
+  color: rgba(0, 0, 0, 0.88);
 }
 
 @media (max-width: 900px) {

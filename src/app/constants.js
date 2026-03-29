@@ -11,7 +11,6 @@ export const Priority = {
 
 export const PriorityMeta = {
   [Priority.low]: { label: 'Низкий', color: '#22c55e' },
-  [Priority.normal]: { label: 'Обычный', color: '#3b82f6' },
+  [Priority.normal]: { label: 'Обычный', color: '#475569' },
   [Priority.high]: { label: 'Высокий', color: '#ef4444' },
 }
-

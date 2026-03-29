@@ -10,17 +10,35 @@ function createId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
+function normalizeDueDate(value) {
+  const s = typeof value === 'string' ? value.trim() : ''
+  if (!s) return ''
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : ''
+}
+
+function migrateTodoRow(row) {
+  if (!row || typeof row !== 'object') return row
+  return { ...row, dueDate: normalizeDueDate(row.dueDate) }
+}
+
 function normalizeTodo(input) {
   const title = String(input?.title ?? '').trim()
   const description = String(input?.description ?? '').trim()
   const priority = input?.priority ?? Priority.normal
   const isDone = Boolean(input?.isDone ?? false)
+  const dueDate = normalizeDueDate(input?.dueDate)
 
-  return { title, description, priority, isDone }
+  return { title, description, priority, isDone, dueDate }
+}
+
+function loadTodos() {
+  const raw = readJson(StorageKeys.todos, [])
+  if (!Array.isArray(raw)) return []
+  return raw.map(migrateTodoRow)
 }
 
 export function useTodos() {
-  const [todos, setTodos] = useState(() => readJson(StorageKeys.todos, []))
+  const [todos, setTodos] = useState(loadTodos)
 
   const persist = useCallback((next) => {
     setTodos(next)
@@ -83,6 +101,6 @@ export function useTodos() {
     return { total, done, percent }
   }, [todos])
 
-  return { todos, addTodo, updateTodo, deleteTodo, toggleDone, stats, setTodos: persist }
+  return { todos, addTodo, updateTodo, deleteTodo, toggleDone, stats }
 }
 

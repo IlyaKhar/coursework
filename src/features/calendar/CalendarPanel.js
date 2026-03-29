@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
-import { readJson, writeJson } from '../../shared/utils/storage'
+import { useEffect, useMemo, useState } from 'react'
+import { StorageKeys } from '../../app/constants'
+import { readJson, writeJson, subscribeAppStorage } from '../../shared/utils/storage'
 
 const CALENDAR_KEY = 'smart-organizer.calendar.v1'
 const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -44,7 +45,35 @@ function buildMonthMatrix(year, monthIndex) {
   return cells
 }
 
+/** Склонение «N задач» для русского */
+function pluralTasksRu(n) {
+  const abs = Math.abs(n) % 100
+  const d = abs % 10
+  if (abs > 10 && abs < 20) return 'задач'
+  if (d === 1) return 'задача'
+  if (d >= 2 && d <= 4) return 'задачи'
+  return 'задач'
+}
+
+/** Сколько задач на каждый yyyy-mm-dd (пересчитывается при сохранении todos) */
+function useTodoCountByDueDate() {
+  const [rev, setRev] = useState(0)
+  useEffect(() => subscribeAppStorage(StorageKeys.todos, () => setRev((n) => n + 1)), [])
+  return useMemo(() => {
+    void rev
+    const raw = readJson(StorageKeys.todos, [])
+    const counts = Object.create(null)
+    if (!Array.isArray(raw)) return counts
+    for (const t of raw) {
+      const d = t?.dueDate
+      if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) counts[d] = (counts[d] ?? 0) + 1
+    }
+    return counts
+  }, [rev])
+}
+
 export default function CalendarPanel() {
+  const countByDueDate = useTodoCountByDueDate()
   const [selectedDate, setSelectedDate] = useState(() => readJson(CALENDAR_KEY, ''))
   const [year, setYear] = useState(() => {
     const fromStorage = readJson(CALENDAR_KEY, '')
@@ -53,6 +82,10 @@ export default function CalendarPanel() {
   })
 
   const humanDate = useMemo(() => formatDate(selectedDate), [selectedDate])
+  const tasksOnSelected = useMemo(() => {
+    if (!selectedDate) return 0
+    return countByDueDate[selectedDate] ?? 0
+  }, [countByDueDate, selectedDate])
   const todayIso = useMemo(() => toISODate(new Date()), [])
   const months = useMemo(
     () =>
@@ -104,12 +137,17 @@ export default function CalendarPanel() {
                 const iso = `${year}-${String(month.index + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                 const isSelected = iso === selectedDate
                 const isToday = iso === todayIso
+                const n = countByDueDate[iso] ?? 0
+                const hasDeadline = n > 0
+                const title =
+                  n === 0 ? undefined : `${n} ${pluralTasksRu(n)} на этот день`
                 return (
                   <button
                     key={iso}
-                    className={`calendarMonth__day ${isSelected ? 'calendarMonth__day--selected' : ''} ${isToday ? 'calendarMonth__day--today' : ''}`}
+                    className={`calendarMonth__day ${isSelected ? 'calendarMonth__day--selected' : ''} ${isToday ? 'calendarMonth__day--today' : ''} ${hasDeadline ? 'calendarMonth__day--deadline' : ''}`}
                     onClick={() => pickDate(month.index, day)}
-                    type="button">
+                    type="button"
+                    title={title}>
                     {day}
                   </button>
                 )
@@ -122,6 +160,11 @@ export default function CalendarPanel() {
       <div className="calendar__preview">
         <div className="calendar__previewTitle">Выбранная дата:</div>
         <div className="calendar__previewDate">{humanDate}</div>
+        {selectedDate ? (
+          <div className="calendar__previewTasks" role="status">
+            На эту дату: <span className="calendar__previewTasksNum">{tasksOnSelected}</span> {pluralTasksRu(tasksOnSelected)}
+          </div>
+        ) : null}
         <button className="btn btn--tiny btn--danger" onClick={() => applyDate('')} type="button">
           Очистить дату
         </button>

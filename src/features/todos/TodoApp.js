@@ -1,26 +1,33 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { PriorityMeta } from '../../app/constants'
+import { formatDueDateLabel, isIsoDateOverdue } from '../../shared/utils/dates'
 import { createTodoDraft } from './types'
 import { useTodos } from './useTodos'
-import { generateTodos } from './generator'
 
-function ProgressBar({ percent }) {
+function ProgressBar({ done, total, percent }) {
+  const detail = total === 0 ? 'Нет задач' : `${done} из ${total} выполнено`
   return (
-    <div className="progress" aria-label="Прогресс выполнения задач">
+    <div
+      className="progress"
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={total === 0 ? 0 : percent}
+      aria-label={`Прогресс: ${detail}`}>
       <div className="progress__label">
-        <span>Прогресс</span>
-        <span>{percent}%</span>
+        <span>{detail}</span>
+        <span>{total === 0 ? '—' : `${percent}%`}</span>
       </div>
       <div className="progress__track">
-        <div className="progress__bar" style={{ width: `${percent}%` }} />
+        <div className="progress__bar" style={{ width: `${total === 0 ? 0 : percent}%` }} />
       </div>
     </div>
   )
 }
 
 function PriorityPill({ priority }) {
-  const meta = PriorityMeta[priority]
+  const meta = PriorityMeta[priority] ?? PriorityMeta.normal
   return (
     <span className="pill" style={{ borderColor: meta.color, color: meta.color }}>
       {meta.label}
@@ -33,20 +40,9 @@ function TodoModal({ isOpen, mode, initial, onClose, onSubmit }) {
   const firstFieldRef = useRef(null)
 
   useEffect(() => {
-    if (isOpen) setDraft(initial ?? createTodoDraft())
+    if (!isOpen) return
+    setDraft(initial ? { ...createTodoDraft(), ...initial } : createTodoDraft())
   }, [initial, isOpen])
-
-  useEffect(() => {
-    function onKey(e) {
-      if (!isOpen) return
-      if (e.ctrlKey && e.key === 'Enter') {
-        e.preventDefault()
-        onSubmit(draft)
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [draft, isOpen, onSubmit])
 
   return (
     <Dialog open={isOpen} onClose={onClose} initialFocus={firstFieldRef} className="modal">
@@ -90,6 +86,16 @@ function TodoModal({ isOpen, mode, initial, onClose, onSubmit }) {
                 ))}
               </select>
             </label>
+
+            <label className="field">
+              <span className="field__label">Срок (необязательно)</span>
+              <input
+                className="field__input"
+                type="date"
+                value={draft.dueDate || ''}
+                onChange={(e) => setDraft((d) => ({ ...d, dueDate: e.target.value }))}
+              />
+            </label>
           </div>
 
           <div className="modal__actions">
@@ -97,7 +103,7 @@ function TodoModal({ isOpen, mode, initial, onClose, onSubmit }) {
               Отмена
             </button>
             <button className="btn btn--primary" onClick={() => onSubmit(draft)} type="button">
-              Сохранить (Ctrl+Enter)
+              Сохранить
             </button>
           </div>
         </Dialog.Panel>
@@ -107,7 +113,7 @@ function TodoModal({ isOpen, mode, initial, onClose, onSubmit }) {
 }
 
 export default function TodoApp() {
-  const { todos, addTodo, updateTodo, deleteTodo, toggleDone, stats, setTodos } = useTodos()
+  const { todos, addTodo, updateTodo, deleteTodo, toggleDone, stats } = useTodos()
   const [filter, setFilter] = useState('all')
   const [query, setQuery] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -126,7 +132,7 @@ export default function TodoApp() {
       })
       .filter((t) => {
         if (!q) return true
-        return `${t.title} ${t.description}`.toLowerCase().includes(q)
+        return `${t.title} ${t.description} ${t.dueDate ?? ''}`.toLowerCase().includes(q)
       })
   }, [filter, query, todos])
 
@@ -142,40 +148,10 @@ export default function TodoApp() {
     setIsModalOpen(true)
   }
 
-  function closeModal() {
-    setIsModalOpen(false)
-  }
-
   function submitModal(draft) {
     if (modalMode === 'edit' && editingId) updateTodo(editingId, draft)
     else addTodo(draft)
     setIsModalOpen(false)
-  }
-
-  useEffect(() => {
-    function onKey(e) {
-      const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target?.tagName)
-
-      if (e.ctrlKey && (e.key === 'n' || e.key === 'N')) {
-        e.preventDefault()
-        openCreate()
-        return
-      }
-
-      if (e.key === 'Delete' && !isInput) {
-        if (!editingId) return
-        e.preventDefault()
-        deleteTodo(editingId)
-        setEditingId(null)
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [deleteTodo, editingId])
-
-  function onGenerate() {
-    const next = generateTodos()
-    setTodos(next)
   }
 
   return (
@@ -183,12 +159,9 @@ export default function TodoApp() {
       <div className="todo__top">
         <div className="todo__topLeft">
           <div className="todo__title">Задачи</div>
-          <div className="todo__hint">Ctrl+N — новая, Ctrl+Enter — сохранить, Delete — удалить выбранную</div>
+          <div className="todo__hint">Добавляй, редактируй и отмечай выполнение</div>
         </div>
         <div className="todo__topRight">
-          <button className="btn btn--ghost" onClick={onGenerate} type="button">
-            Сгенерировать задачи
-          </button>
           <button className="btn btn--primary" onClick={openCreate} type="button">
             + Новая
           </button>
@@ -212,7 +185,7 @@ export default function TodoApp() {
       </div>
 
       <div className="todo__stats">
-        <ProgressBar percent={stats.percent} />
+        <ProgressBar done={stats.done} total={stats.total} percent={stats.percent} />
         <div className="todo__chips">
           <span className="chip">
             Всего: <b>{stats.total}</b>
@@ -225,15 +198,21 @@ export default function TodoApp() {
 
       <div className="todo__list" role="list">
         {visible.length === 0 ? (
-          <div className="todo__empty">Пока пусто. Нажми “Новая” или “Сгенерировать задачи”.</div>
+          <div className="todo__empty">Пока пусто. Нажми «Новая».</div>
         ) : (
           visible.map((t) => (
-            <button
-              key={t.id}
-              className={`todoItem ${editingId === t.id ? 'todoItem--active' : ''} ${t.isDone ? 'todoItem--done' : ''}`}
-              onClick={() => setEditingId(t.id)}
-              type="button">
-              <div className="todoItem__row">
+            <div key={t.id} className={`todoItem ${editingId === t.id ? 'todoItem--active' : ''} ${t.isDone ? 'todoItem--done' : ''}`} role="listitem">
+              <div
+                className="todoItem__row"
+                onClick={() => setEditingId(t.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setEditingId(t.id)
+                  }
+                }}
+                role="button"
+                tabIndex={0}>
                 <input
                   className="todoItem__check"
                   type="checkbox"
@@ -245,32 +224,28 @@ export default function TodoApp() {
                 <div className="todoItem__main">
                   <div className="todoItem__title">{t.title}</div>
                   {t.description ? <div className="todoItem__desc">{t.description}</div> : null}
+                  {t.dueDate ? (
+                    <div className={`todoItem__due ${isIsoDateOverdue(t.dueDate, t.isDone) ? 'todoItem__due--overdue' : ''}`}>Срок: {formatDueDateLabel(t.dueDate)}</div>
+                  ) : null}
                 </div>
                 <div className="todoItem__meta">
                   <PriorityPill priority={t.priority} />
                 </div>
               </div>
               <div className="todoItem__actions">
-                <button className="btn btn--tiny" onClick={(e) => (e.stopPropagation(), openEdit(t.id))} type="button">
+                <button className="btn btn--tiny" onClick={() => openEdit(t.id)} type="button">
                   Редактировать
                 </button>
-                <button className="btn btn--tiny btn--danger" onClick={(e) => (e.stopPropagation(), deleteTodo(t.id))} type="button">
+                <button className="btn btn--tiny btn--danger" onClick={() => deleteTodo(t.id)} type="button">
                   Удалить
                 </button>
               </div>
-            </button>
+            </div>
           ))
         )}
       </div>
 
-      <TodoModal
-        isOpen={isModalOpen}
-        mode={modalMode}
-        initial={modalMode === 'edit' ? editingTodo : null}
-        onClose={closeModal}
-        onSubmit={submitModal}
-      />
+      <TodoModal isOpen={isModalOpen} mode={modalMode} initial={modalMode === 'edit' ? editingTodo : null} onClose={() => setIsModalOpen(false)} onSubmit={submitModal} />
     </div>
   )
 }
-

@@ -6,6 +6,8 @@ export function createTodoDraft() {
     description: '',
     priority: Priority.normal,
     isDone: false,
+    /** Срок yyyy-mm-dd или пусто */
+    dueDate: '',
   }
 }
 
