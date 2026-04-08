@@ -5,6 +5,13 @@ import { formatDueDateLabel, isIsoDateOverdue } from '../../shared/utils/dates'
 import { createTodoDraft } from './types'
 import { useTodos } from './useTodos'
 
+function isTypingTarget(target) {
+  const tag = target?.tagName?.toLowerCase()
+  if (!tag) return false
+  if (target?.isContentEditable) return true
+  return tag === 'input' || tag === 'textarea' || tag === 'select'
+}
+
 function ProgressBar({ done, total, percent }) {
   const detail = total === 0 ? 'Нет задач' : `${done} из ${total} выполнено`
   return (
@@ -43,6 +50,18 @@ function TodoModal({ isOpen, mode, initial, onClose, onSubmit }) {
     if (!isOpen) return
     setDraft(initial ? { ...createTodoDraft(), ...initial } : createTodoDraft())
   }, [initial, isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+    function onKeyDown(e) {
+      // Ctrl+Enter сохраняет задачу из модального окна
+      if (!e.ctrlKey || e.key !== 'Enter') return
+      e.preventDefault()
+      onSubmit(draft)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [draft, isOpen, onSubmit])
 
   return (
     <Dialog open={isOpen} onClose={onClose} initialFocus={firstFieldRef} className="modal">
@@ -154,12 +173,35 @@ export default function TodoApp() {
     setIsModalOpen(false)
   }
 
+  useEffect(() => {
+    function onKeyDown(e) {
+      // В полях ввода шорткаты списка не перехватываем
+      if (isTypingTarget(e.target)) return
+
+      // Ctrl+N может перехватываться браузером, поэтому есть рабочий fallback Alt+N
+      if ((e.ctrlKey && e.key.toLowerCase() === 'n') || (e.altKey && e.key.toLowerCase() === 'n')) {
+        e.preventDefault()
+        openCreate()
+        return
+      }
+
+      if (e.key === 'Delete' && editingId && !isModalOpen) {
+        e.preventDefault()
+        deleteTodo(editingId)
+        setEditingId(null)
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [deleteTodo, editingId, isModalOpen])
+
   return (
     <div className="todo">
       <div className="todo__top">
         <div className="todo__topLeft">
           <div className="todo__title">Задачи</div>
-          <div className="todo__hint">Добавляй, редактируй и отмечай выполнение</div>
+          <div className="todo__hint">Горячие клавиши: Alt+N (новая), Ctrl+Enter (сохранить), Delete (удалить выбранную)</div>
         </div>
         <div className="todo__topRight">
           <button className="btn btn--primary" onClick={openCreate} type="button">
